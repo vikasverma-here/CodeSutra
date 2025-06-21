@@ -2,7 +2,7 @@
 
 
 
-const app = require("./src/App.js");
+const {app} = require("./src/App.js");
 const { config } = require("./src/config/config.js");
 const connectDB = require("./src/config/db.js");
 

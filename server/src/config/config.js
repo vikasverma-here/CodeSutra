@@ -25,6 +25,7 @@ require("dotenv").config();
 const config = {
   port: process.env.PORT || 5000,
   mongoUri: process.env.MONGO_URI,
+  GOOGLE_API:process.env.GOOGLE_API,
 };
 
 module.exports = { config }; // ✅ wrap it in object
