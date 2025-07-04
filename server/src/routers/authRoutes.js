@@ -7,5 +7,10 @@ const validate = require("../middlewares/validate");
 // authenctication routes 
 authRouter.post("/register",registerValidation,validate,authController.register)
 authRouter.post("/login", loginValidation, validate, authController.login);
+authRouter.post("/logout",  authController.logout);
+
+
+// verificatio using nodemailer 
+authRouter.get("/verify/:token",authController.verifyUser)
 
 module.exports=authRouter

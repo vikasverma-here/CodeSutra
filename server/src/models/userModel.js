@@ -43,7 +43,10 @@ const userSchema = new mongoose.Schema({
     type: String, // Cloudinary URL or local path
     default: "",
   },
-
+isVerified: {
+   type: Boolean,
+    default: false
+   },
  
 
 });
