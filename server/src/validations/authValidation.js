@@ -32,3 +32,11 @@ exports.loginValidation = [
     .notEmpty().withMessage("Password is required")
     .isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
 ];
+
+
+exports.adminRegisterValidation = [
+  ...exports.registerValidation,
+  body("secretCode")
+    .notEmpty().withMessage("Secret code is required")
+    .equals(process.env.ADMIN_SECRET_CODE).withMessage("Invalid admin secret code"),
+];
