@@ -14,7 +14,7 @@ module.exports.adminRegister = async (req, res) => {
   try {
     const { firstName, lastName, email, password, secretCode,username } = req.body;
 
-    // Secret code check
+   
     if (secretCode !== process.env.ADMIN_SECRET_CODE) {
       return res.status(403).json({ success: false, message: "Invalid secret code give me valid secret code to become admin" });
     }
@@ -32,8 +32,7 @@ module.exports.adminRegister = async (req, res) => {
       email,
       password: hashedPassword,
       username,
-      role: "admin", // force role as admin
-    //   isVerified: true, // optional: make admin auto-verified
+      role: "admin", 
     });
 
     const token = jwt.sign({ id: newAdmin._id, email: newAdmin.email }, process.env.JWT_SECRET, { expiresIn: "7d" });
