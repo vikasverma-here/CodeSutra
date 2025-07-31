@@ -82,7 +82,7 @@ const problemSchema = new Schema(
     problemCreator: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      // required: true,
     },
     createdAt: {
       type: Date,

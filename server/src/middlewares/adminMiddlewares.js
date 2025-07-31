@@ -5,7 +5,7 @@ const isAdmin = (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: "Unauthorized: No user in request",
+        message: "Unauthorized: No Admin in request",
       });
     }
 
