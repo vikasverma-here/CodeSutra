@@ -10,5 +10,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/user/auth",authRoutes)
 app.use("/api/admin/auth",adminAuthRoutes)
 app.use("/api/admin/problems",problemRoutes)
+app.use("/api/user/problems",problemRoutes)
 
 module.exports=app

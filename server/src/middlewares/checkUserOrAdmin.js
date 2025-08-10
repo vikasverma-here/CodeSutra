@@ -1,18 +1,18 @@
 
 // ✅ Middleware 2: Role Check for Admin
-const isAdmin = (req, res, next) => {
+const isUser = (req, res, next) => {
   try {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: "Unauthorized: No Admin in request",
+        message: "Unauthorized: No user in request",
       });
     }
 
-    if (req.user.role.toLowerCase() !== "admin") {
+    if (req.user.role.toLowerCase() !== "user") {
       return res.status(403).json({
         success: false,
-        message: "Access denied: Admins only",
+        message: "Access denied: user only",
       });
     }
 
@@ -26,4 +26,4 @@ const isAdmin = (req, res, next) => {
   }
 };
 
-module.exports = {  isAdmin };
+module.exports = {  isUser };
