@@ -4,7 +4,7 @@ const User = require("../models/userModel");
 const protecttedRoutesUser = async (req, res, next) => {
   try {
     const token = req.cookies?.token;
-      console.log(token)
+      console.log( "idkvjoi",token)
     if (!token) {
       return res.status(401).json({
         success: false,

@@ -102,7 +102,7 @@ module.exports.updateProblem = async (req, res) => {
   }
 
   try {
-    const creator = req.user; // Assuming req.user contains the authenticated admin's details
+    const creator = req.user; 
 
     const {
       title,

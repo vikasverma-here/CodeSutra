@@ -14,10 +14,14 @@ module.exports.adminRegister = async (req, res) => {
   try {
     const { firstName, lastName, email, password, secretCode,username } = req.body;
 
-   
-    if (secretCode !== process.env.ADMIN_SECRET_CODE) {
-      return res.status(403).json({ success: false, message: "Invalid secret code give me valid secret code to become admin" });
-    }
+   console.log(secretCode,process.env.ADMIN_SECRET_CODE)
+   if (secretCode.trim() !== process.env.ADMIN_SECRET_CODE.trim()) {
+  return res.status(403).json({
+    success: false,
+    message: "Invalid secret code, give me valid secret code to become admin"
+  });
+}
+
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
