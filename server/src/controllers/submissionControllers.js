@@ -1,71 +1,58 @@
+
+
+
+
+
 const Problem = require("../models/problemsModel");
 const Submission = require("../models/submissionModel");
-const { getLanguageId , submitBatch, fetchBatchResults } = require("../utils/problemUtils");
+const { getLanguageId, submitBatch, fetchBatchResults } = require("../utils/problemUtils");
+
 module.exports.submitQuesion = async (req, res) => {
   try {
-    const userId = req?.user?._id; 
-    const problemId = req.params.id; 
-    const { code, language } = req.body; 
+    const userId = req?.user?._id;
+    const problemId = req.params.id;
+    const { code, language } = req.body;
 
-  
     if (!userId || !problemId || !code || !language) {
       return res.status(400).json({
-        message: "userId, problemId, code, and language are required", 
+        message: "userId, problemId, code, and language are required",
       });
     }
 
-    const problemById = await Problem.findById(problemId); 
-    console.log("kya kuch aa rha ha yanahi bus ",problemById?.hiddenTestCases)
-
+    const problemById = await Problem.findById(problemId);
     if (!problemById) {
-      return res.status(404).json({ message: "Problem not found" }); 
+      return res.status(404).json({ message: "Problem not found" });
     }
 
+    const allTestCases = [
+      ...(problemById.visibleTestCases || []),
+      ...(problemById.hiddenTestCases || []),
+    ];
 
+    if (!allTestCases.length) {
+      return res.status(400).json({ message: "No test cases found" });
+    }
 
-    const submittedQuestion  = await Submission.create({
-        userId : userId,
-        problemId:problemId,
-        code:code,
-        language:language,
-        status:"pending",
-        problemById:problemById?.hiddenTestCases?.length,
-
-    })
-    console.log("language ",language)
-
-    const languageId = await getLanguageId(language)
-
+    const languageId = await getLanguageId(language);
     if (!languageId) {
-        return res.status(400).json({ message: "Unsupported programming language" });
+      return res.status(400).json({ message: "Unsupported programming language" });
     }
 
-    if (!problemById?.hiddenTestCases?.length) {
-  return res.status(400).json({ message: "No hidden test cases found" });
-}
+    
+    const submissions = allTestCases.map(test => ({
+      source_code: code,
+      language_id: languageId,
+      stdin: test.input || "",
+      expected_output: test.output || "",
+    }));
 
-      const submissions = problemById.hiddenTestCases?.map(test => ({
-        source_code: code,
-        language_id: languageId,
-        stdin: test.input || "",
-        expected_output: test.output || "",
-      }));
+    const tokens = await submitBatch(submissions);
+    const resultTokens = tokens.map(t => t.token);
+    const finalResponse = await fetchBatchResults(resultTokens);
 
+    const total = finalResponse.length;
+    const passed = finalResponse.filter(r => r.status?.id === 3).length;
 
-      console.log("kya batch ban rha hai sahi se " ,submissions)
-
-      const tokens = await submitBatch(submissions) 
-     console.log(tokens)
-      const resultTokens = tokens.map(value => value.token);
-      const finalResponse = await fetchBatchResults(resultTokens);
-      
-      console.log("idjv,m vlic,mvckivcvjo",finalResponse)
-      
-
-      const total = finalResponse.length;
-    const passed = finalResponse.filter(r => r.status?.id === 3).length; // 3 = Accepted
-
-    // Decide final status
     let finalStatus = "failed";
     if (passed === total) {
       finalStatus = "accepted";
@@ -76,25 +63,33 @@ module.exports.submitQuesion = async (req, res) => {
       if (firstError?.status?.id === 4) finalStatus = "runtime_error";
     }
 
-    // Step 3: Update submission with results
-    submittedQuestion.status = finalStatus;
-    submittedQuestion.passedCount = passed;
-    submittedQuestion.totalCount = total;
-    await submittedQuestion.save();
+
+
+
+    const runtime = finalResponse.reduce((acc, r) => acc + Number(r.time || 0), 0) / total;
+const memory = finalResponse.reduce((acc, r) => acc + Number(r.memory || 0), 0) / total;
+
+   const submittedQuestion = await Submission.create({
+  userId,
+  problemId,
+  code,
+  language,
+  status: finalStatus,
+  testCasesPassed: passed,
+  testCasesTotal: total,
+  runtime,
+  memory,
+});
 
     res.status(200).json({
       message: "Submission evaluated",
       submission: submittedQuestion,
-      results: finalResponse,
+      results: finalResponse, // UI me tum sirf visible test cases dikhana
     });
 
-
-   
   } catch (error) {
     res.status(500).json({
       error: error.message || "Something went wrong",
     });
   }
 };
-
-

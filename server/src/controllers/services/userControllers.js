@@ -1,21 +1,22 @@
 const Problem = require("../services/userControllers")
-const Submission = require("../services/userControllers");
+const Submission = require("../../models/submissionModel");
 
 
 module.exports.getUserSubmissions = async (req, res) => {
   try {
     console.log(req.user)
-    const userId = req.user.userId; // URL se user ID
-    console.log(userId)
-    console.log(req.user._id)
-    if (userId != req.user._id) { // Sirf apna data dekh
-      return res.status(403).json({ message: 'only ' });
-    }
+    const { userID } = req.params; 
+    console.log( 'lets check the userId',userID)
+    console.log("_id",req.user._id)
+   if (userID !== req.user._id.toString()) {
+  return res.status(403).json({ message: 'you only can access your solved problem' });
+}
 
+console.log(userID)
     
     const subs = await Submission.find({ 
-      userId: userId, 
-      status: ['accepted'] 
+      userId: userID, 
+      
     }).populate('problemId', 'title difficulty'); 
 
   
@@ -29,26 +30,65 @@ module.exports.getUserSubmissions = async (req, res) => {
       if (!alreadyAdded) {
         solvedList.push({
           problemId: probId,
-          problemTitle: sub.problemId.title || 'Unknown', // Problem ka title
-          difficulty: sub.problemId.difficulty || 'N/A', // Problem difficulty
-          language: sub.language, // JS, C++, etc.
-          status: sub.status, // Accepted ya success
-          testCasesPassed: sub.testCasesPassed, // Kitne test pass hue
-          testCasesTotal: sub.testCasesTotal, // Total test cases
-          runtime: sub.runtime, // milliseconds
-          memory: sub.memory, // KB
-          submittedAt: sub.createdAt // Kab submit kiya
+          problemTitle: sub.problemId.title || 'Unknown', 
+          difficulty: sub.problemId.difficulty || 'N/A',
+          language: sub.language,
+          status: sub.status, 
+          testCasesPassed: sub.testCasesPassed, 
+          testCasesTotal: sub.testCasesTotal, 
+          runtime: sub.runtime, 
+          memory: sub.memory, 
+          submittedAt: sub.createdAt 
         });
       }
     }
 
     res.json({
       success: true,
-      solvedCount: solvedList.length, // Total solved problems
-      submissions: solvedList // Puri details
+      solvedCount: solvedList.length, 
+      submissions: solvedList 
     });
   } catch (error) {
     res.status(500).json({ message: 'Kuch toh gadbad hai' });
   }
 };
 
+
+
+
+module.exports.getProblemAttempts = async (req, res) => {
+  try {
+    const { problemId } = req.params;   // param se problemId lo
+    const userId = req.user._id;        // logged in user ka id
+
+    console.log("User ID:", userId);
+    console.log("Problem ID:", problemId);
+
+    // Submissions nikaalo user aur problem ke basis pe
+    const attempts = await Submission.find({ 
+      problemId: problemId, 
+      userId: userId 
+    }).sort({ createdAt: -1 });  // latest first
+
+    // Agar submissions nahi mile
+    if (!attempts || attempts.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "No attempts found for this problem" 
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      totalAttempts: attempts.length, 
+      attempts 
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Kuch toh gadbad hai" 
+    });
+  }
+};
