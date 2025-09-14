@@ -6,5 +6,6 @@ const { isUser } = require("../middlewares/checkUserOrAdmin")
 const submissionRoutes= express.Router()
 
 submissionRoutes.post("/problem/:id",protecttedRoutesUser,isUser,submissionControllers.submitQuesion)
+submissionRoutes.post("/problem/runcode/:id",protecttedRoutesUser,isUser,submissionControllers.runQuesion)
 
 module.exports=submissionRoutes
